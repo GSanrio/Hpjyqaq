@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>QAQ家族大转盘</title>
+    <link rel="stylesheet" href="Demo.css">
+</head>
+<body>
+    <div class="rotate-lock" aria-hidden="true">
+        <div class="rotate-lock-card">
+            <p class="rotate-lock-label">Mobile View</p>
+            <h2>请横屏查看</h2>
+            <p>为了保证转盘和操作区完整显示，手机端仅支持横屏模式。</p>
+        </div>
+    </div>
+
+    <div class="sky-bg"></div>
+    <div class="app-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Wheel Event Simulator</p>
+                <h1>QAQ家族大转盘</h1>
+                <p class="subcopy">内圈 5 个图片决定属性，外圈 12 格决定星级。普通追加按规则判定，保护追加第 3 次必成。</p>
+            </div>
+            <div class="resource-strip">
+                <div class="resource-card"><span class="resource-label">余额</span><strong id="balanceValue">0</strong></div>
+                <div class="resource-card"><span class="resource-label">令牌</span><strong id="tokenValue">0</strong></div>
+                <div class="resource-card"><span class="resource-label">徽章</span><strong id="badgeValue">0</strong></div>
+            </div>
+        </header>
+
+        <main class="main-layout">
+            <section class="wheel-panel panel">
+                <div class="wheel-hud">
+                    <div>
+                        <p class="tiny-label">当前结果</p>
+                        <h2 id="resultLabel">等待开始</h2>
+                    </div>
+                    <div class="chip-row">
+                        <span class="rule-chip">属性 20% 均分</span>
+                        <span class="rule-chip">外圈 12 格：9 个 1，2 个 2，1 个 3</span>
+                    </div>
+                </div>
+
+                <div class="wheel-stage">
+                    <div class="cosmic-wheel">
+                        <div class="pointer outer-pointer"></div>
+                        <div class="star-ring-shell">
+                            <div class="star-ring" id="starRing"></div>
+                        </div>
+
+                        <div class="inner-wheel-shell">
+                            <div class="pointer inner-pointer"></div>
+                            <div class="core-glow"></div>
+                            <div class="element-orbit" id="elementOrbit"></div>
+                            <div class="center-sigil"><span>QAQ</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wheel-legend" id="wheelLegend"></div>
+            </section>
+
+            <section class="panel side-panel compact-side-panel">
+                <div class="side-head">
+                    <div>
+                        <p class="tiny-label">操作与结算</p>
+                        <h3>控制台</h3>
+                    </div>
+                    <div class="header-button-group">
+                        <button id="totalSpendButton" class="ghost-btn stat-btn" type="button">总消费 0</button>
+                        <button id="rechargeButton" class="secondary-btn" type="button">充值</button>
+                        <button id="resetButton" class="ghost-btn danger-btn" type="button">重抽</button>
+                    </div>
+                </div>
+
+                <div class="side-section">
+                    <div class="star-track-card compact-track-card">
+                        <div class="star-track-head">
+                            <span class="tiny-label">星轨进度</span>
+                            <span id="starTrackText">0 / 7 星</span>
+                        </div>
+                        <div class="star-track" id="starTrack"></div>
+                    </div>
+
+                    <div class="status-grid">
+                        <div class="status-card"><span>当前属性</span><strong id="elementValue">-</strong></div>
+                        <div class="status-card"><span>当前星级</span><strong id="starValue">0 星</strong></div>
+                        <div class="status-card"><span>保护失败计数</span><strong id="protectCountValue">0 / 2</strong></div>
+                        <div class="status-card"><span>本轮令牌</span><strong id="roundStateValue">0</strong></div>
+                    </div>
+
+                    <div class="action-stack">
+                        <button id="drawButton" class="primary-btn">抽奖 (6)</button>
+                        <button id="normalAppendButton" class="accent-btn" disabled>普通追加</button>
+                        <button id="protectedAppendButton" class="accent-alt-btn" disabled>保护追加</button>
+                    </div>
+
+                    <p class="hint-line" id="costHint">保护追加费用会随当前星级变化。</p>
+                </div>
+
+                <div class="side-section reward-section">
+                    <div class="section-title">
+                        <p class="tiny-label">待领取奖励</p>
+                    </div>
+
+                    <div class="reward-grid">
+                        <article class="reward-card token-card">
+                            <span class="reward-kicker">令牌奖励</span>
+                            <strong id="tokenRewardValue">0</strong>
+                            <p id="tokenRewardText">达到星级后可领取令牌。</p>
+                            <button id="claimTokenButton" class="secondary-btn" disabled>领取令牌</button>
+                        </article>
+
+                        <article class="reward-card prize-card">
+                            <span class="reward-kicker">物品奖励</span>
+                            <strong id="prizeRewardValue">NULL</strong>
+                            <p id="prizeRewardText">3 星开始出现物品奖励，6 星及以上可领取徽章。</p>
+                            <button id="claimPrizeButton" class="secondary-btn" disabled>领取奖励</button>
+                        </article>
+                    </div>
+
+                    <div class="subpage-entry">
+                        <button id="openArchiveButton" class="ghost-btn archive-btn">打开记录与背包</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="Demo.js"></script>
+</body>
+</html>
