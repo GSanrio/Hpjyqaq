@@ -2,13 +2,17 @@
     --bg-night: #050505;
     --panel: rgba(12, 12, 12, 0.9);
     --line: rgba(255, 224, 164, 0.18);
-    --gold: #ffd88a;
     --cyan: #7fe9ff;
     --ink: #efe6d2;
     --muted: #c4b79e;
     --shadow: rgba(0, 0, 0, 0.36);
     --gold-glow: rgba(255, 214, 120, 0.36);
-    --wheel-size: min(56vw, 600px);
+    --shell-pad-x: clamp(10px, 1.8vw, 18px);
+    --shell-pad-y: clamp(10px, 1.8vw, 18px);
+    --panel-pad: clamp(10px, 1.3vw, 16px);
+    --panel-gap: clamp(10px, 1.4vw, 16px);
+    --card-gap: clamp(8px, 1vw, 12px);
+    --wheel-size: clamp(280px, 54vw, 600px);
 }
 
 * { box-sizing: border-box; }
@@ -33,16 +37,14 @@ body {
     pointer-events: none;
 }
 
-.rotate-lock {
-    display: none;
-}
+.rotate-lock { display: none; }
 
 .app-shell {
     position: relative;
     z-index: 1;
     max-width: 1360px;
     margin: 0 auto;
-    padding: 16px 18px 20px;
+    padding: var(--shell-pad-y) var(--shell-pad-x);
 }
 
 .topbar, .panel { backdrop-filter: blur(14px); }
@@ -50,9 +52,9 @@ body {
 .topbar {
     display: flex;
     justify-content: space-between;
-    gap: 16px;
+    gap: var(--panel-gap);
     align-items: flex-start;
-    margin-bottom: 16px;
+    margin-bottom: var(--panel-gap);
 }
 
 .eyebrow, .tiny-label {
@@ -82,9 +84,9 @@ h1 {
 
 .resource-strip {
     display: grid;
-    grid-template-columns: repeat(3, minmax(98px, 1fr));
-    gap: 10px;
-    min-width: min(100%, 330px);
+    grid-template-columns: repeat(3, minmax(88px, 1fr));
+    gap: var(--card-gap);
+    min-width: min(100%, 320px);
 }
 
 .resource-card,
@@ -98,13 +100,13 @@ h1 {
 }
 
 .resource-card {
-    padding: 12px 14px;
+    padding: 11px 12px;
     text-align: center;
 }
 
 .resource-card strong {
     display: block;
-    font-size: 24px;
+    font-size: clamp(18px, 2.2vw, 24px);
     margin-top: 6px;
 }
 
@@ -116,9 +118,9 @@ h1 {
 
 .main-layout {
     display: grid;
-    grid-template-columns: minmax(420px, 1fr) minmax(320px, 0.78fr);
-    gap: 16px;
-    align-items: start;
+    grid-template-columns: minmax(340px, 1fr) minmax(280px, 0.8fr);
+    gap: var(--panel-gap);
+    align-items: stretch;
 }
 
 .panel {
@@ -128,16 +130,24 @@ h1 {
     box-shadow: 0 24px 54px var(--shadow);
 }
 
-.wheel-panel {
-    padding: 16px;
+.wheel-panel,
+.side-panel {
+    padding: var(--panel-pad);
+}
+
+.wheel-panel,
+.merged-side-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .wheel-hud {
     display: flex;
     justify-content: space-between;
-    gap: 14px;
+    gap: var(--card-gap);
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: var(--card-gap);
 }
 
 .wheel-hud h2 {
@@ -149,7 +159,7 @@ h1 {
 .chip-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--card-gap);
     justify-content: flex-end;
 }
 
@@ -164,17 +174,18 @@ h1 {
 
 .wheel-stage {
     position: relative;
-    min-height: 560px;
+    min-height: clamp(320px, 52vw, 560px);
     display: grid;
     place-items: center;
+    flex: 1;
 }
 
 .cosmic-wheel {
     position: relative;
     width: var(--wheel-size);
     height: var(--wheel-size);
-    max-width: 680px;
-    max-height: 680px;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 .star-ring-shell, .inner-wheel-shell {
@@ -187,7 +198,7 @@ h1 {
 .star-ring-shell {
     width: 100%;
     height: 100%;
-    padding: 36px;
+    padding: clamp(20px, 3vw, 36px);
     background:
         radial-gradient(circle at 50% 50%, rgba(255, 221, 154, 0.12), rgba(0, 0, 0, 0) 58%),
         conic-gradient(from 0deg, rgba(248, 215, 140, 0.96), rgba(116, 103, 118, 0.92), rgba(241, 221, 187, 0.98), rgba(77, 72, 93, 0.96), rgba(248, 215, 140, 0.96));
@@ -197,7 +208,7 @@ h1 {
 .star-ring-shell::after {
     content: "";
     position: absolute;
-    inset: 28px;
+    inset: clamp(14px, 2.3vw, 28px);
     border-radius: 50%;
     border: 1px solid rgba(255, 232, 181, 0.18);
 }
@@ -222,10 +233,10 @@ h1 {
 }
 
 .star-slot {
-    width: 64px;
-    height: 64px;
-    margin-left: -32px;
-    margin-top: -32px;
+    width: clamp(40px, 5.8vw, 64px);
+    height: clamp(40px, 5.8vw, 64px);
+    margin-left: calc(clamp(40px, 5.8vw, 64px) / -2);
+    margin-top: calc(clamp(40px, 5.8vw, 64px) / -2);
 }
 
 .star-slot::before {
@@ -243,7 +254,7 @@ h1 {
     inset: 0;
     display: grid;
     place-items: center;
-    font-size: 18px;
+    font-size: clamp(13px, 1.7vw, 18px);
     color: #402000;
     font-weight: 700;
 }
@@ -286,25 +297,25 @@ h1 {
 .center-sigil {
     position: absolute;
     inset: 50%;
-    width: 96px;
-    height: 96px;
+    width: clamp(64px, 8.5vw, 96px);
+    height: clamp(64px, 8.5vw, 96px);
     transform: translate(-50%, -50%);
     border-radius: 50%;
     display: grid;
     place-items: center;
     background: radial-gradient(circle, rgba(255, 253, 233, 0.94), rgba(250, 213, 108, 0.88) 34%, rgba(132, 77, 12, 0.92) 35%, rgba(40, 22, 72, 0.92) 100%);
     box-shadow: 0 0 0 10px rgba(255, 232, 181, 0.14), 0 0 30px rgba(255, 218, 112, 0.46);
-    font-size: 28px;
+    font-size: clamp(18px, 2.4vw, 28px);
     font-weight: 700;
     color: #fffde9;
     text-shadow: 0 0 16px rgba(255, 224, 116, 0.56);
 }
 
 .element-ball {
-    width: 86px;
-    height: 86px;
-    margin-left: -43px;
-    margin-top: -43px;
+    width: clamp(54px, 7.4vw, 86px);
+    height: clamp(54px, 7.4vw, 86px);
+    margin-left: calc(clamp(54px, 7.4vw, 86px) / -2);
+    margin-top: calc(clamp(54px, 7.4vw, 86px) / -2);
     border-radius: 50%;
     overflow: hidden;
     background: rgba(9, 8, 15, 0.92);
@@ -340,77 +351,100 @@ h1 {
 }
 
 .outer-pointer {
-    top: 6px;
-    width: 56px;
-    height: 74px;
+    top: clamp(4px, 0.8vw, 8px);
+    width: clamp(36px, 4.8vw, 56px);
+    height: clamp(48px, 6.4vw, 74px);
     clip-path: polygon(50% 0%, 100% 42%, 74% 42%, 74% 88%, 50% 100%, 26% 88%, 26% 42%, 0% 42%);
     background: linear-gradient(180deg, #fff7dd, #e0b765 48%, #604114 100%);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.28);
 }
 
 .inner-pointer {
-    top: 18px;
-    width: 42px;
-    height: 58px;
+    top: clamp(10px, 1.6vw, 18px);
+    width: clamp(28px, 3.4vw, 42px);
+    height: clamp(40px, 4.9vw, 58px);
     clip-path: polygon(50% 0%, 100% 44%, 50% 100%, 0% 44%);
     background: linear-gradient(180deg, #fff8e2, #f1be59 52%, #704515 100%);
+}
+
+.wheel-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+    align-items: flex-start;
 }
 
 .wheel-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
+    gap: var(--card-gap);
+    margin-top: 0;
     justify-content: center;
+    width: 100%;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 11px;
+    padding: 6px 10px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.06);
     color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .legend-image {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid rgba(255, 240, 208, 0.28);
 }
 
-.side-panel {
-    padding: 14px;
-}
-
-.compact-side-panel {
+.merged-side-panel {
     display: grid;
-    gap: 10px;
-    align-content: start;
+    gap: var(--card-gap);
+    height: 100%;
 }
 
 .side-head {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: var(--card-gap);
     align-items: flex-start;
 }
 
 .side-head h3 {
     margin-top: 6px;
-    font-size: 24px;
+    font-size: clamp(18px, 2.1vw, 24px);
     color: #fdeab8;
 }
 
-.side-section {
+.side-block {
     border: 1px solid rgba(255, 224, 164, 0.12);
     background: rgba(255, 255, 255, 0.02);
-    border-radius: 20px;
-    padding: 12px;
+    border-radius: clamp(14px, 1.6vw, 20px);
+    padding: clamp(9px, 1.2vw, 12px);
+}
+
+.progress-block {
+    display: grid;
+    gap: var(--card-gap);
+}
+
+.action-reward-block {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: var(--card-gap);
+    align-items: start;
+    flex: 1;
+}
+
+.action-column,
+.reward-column {
+    min-width: 0;
 }
 
 .section-title {
@@ -424,33 +458,55 @@ h1 {
     justify-content: flex-end;
 }
 
+.compact-status-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
 .status-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    margin-top: 10px;
 }
 
 .status-card {
-    padding: 11px 12px;
+    padding: 10px 11px;
 }
 
 .status-card span {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .status-card strong {
     display: block;
-    margin-top: 6px;
-    font-size: 18px;
+    margin-top: 5px;
+    font-size: 16px;
     color: #fff2cb;
 }
 
-.action-stack {
+.compact-action-stack {
     display: grid;
     gap: 8px;
+}
+
+.skip-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.wheel-skip-toggle {
+    margin-top: 0;
+    padding-left: 2px;
+}
+
+.skip-toggle input {
+    width: 16px;
+    height: 16px;
+    accent-color: #f4bc5d;
 }
 
 button {
@@ -472,8 +528,8 @@ button:disabled {
 }
 
 .primary-btn, .accent-btn, .accent-alt-btn, .secondary-btn, .ghost-btn {
-    padding: 10px 14px;
-    font-size: 14px;
+    padding: clamp(8px, 1vw, 10px) clamp(10px, 1.2vw, 14px);
+    font-size: clamp(12px, 1.1vw, 14px);
 }
 
 .primary-btn {
@@ -524,14 +580,14 @@ button:disabled {
     line-height: 1.45;
 }
 
-.reward-grid {
+.compact-reward-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
 }
 
 .reward-card, .star-track-card {
-    padding: 12px;
+    padding: 10px;
 }
 
 .reward-kicker {
@@ -543,18 +599,18 @@ button:disabled {
 
 .reward-card strong {
     display: block;
-    margin: 8px 0;
-    font-size: 18px;
-    min-height: 38px;
+    margin: 7px 0 8px;
+    font-size: 16px;
+    min-height: 28px;
     color: #fff2ca;
 }
 
 .reward-card p {
-    min-height: 34px;
+    min-height: 30px;
     color: var(--muted);
     line-height: 1.35;
-    margin-bottom: 10px;
-    font-size: 12px;
+    margin-bottom: 8px;
+    font-size: 11px;
 }
 
 .star-track-head {
@@ -568,11 +624,11 @@ button:disabled {
 .star-track {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 8px;
+    gap: clamp(6px, 0.8vw, 8px);
 }
 
 .track-node {
-    height: 12px;
+    height: 11px;
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     background: rgba(255, 255, 255, 0.16);
     border: 1px solid rgba(255, 239, 203, 0.08);
@@ -584,7 +640,7 @@ button:disabled {
 }
 
 .subpage-entry {
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .archive-btn {
@@ -593,7 +649,7 @@ button:disabled {
 
 @media (max-width: 1200px) {
     :root {
-        --wheel-size: min(68vw, 560px);
+        --wheel-size: clamp(260px, 66vw, 560px);
     }
 
     .main-layout {
@@ -602,6 +658,25 @@ button:disabled {
 
     .wheel-stage {
         min-height: 500px;
+    }
+
+    .compact-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .action-reward-block {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 1024px) {
+    .topbar {
+        flex-direction: column;
+    }
+
+    .resource-strip {
+        width: 100%;
+        min-width: 0;
     }
 }
 
@@ -652,7 +727,9 @@ button:disabled {
 
 @media (max-width: 900px) and (orientation: landscape) {
     :root {
-        --wheel-size: min(46vw, 320px);
+        --wheel-size: clamp(240px, 42vw, 360px);
+        --panel-gap: 8px;
+        --card-gap: 6px;
     }
 
     .app-shell {
@@ -674,45 +751,22 @@ button:disabled {
         max-width: 520px;
     }
 
-    .resource-strip {
-        min-width: 264px;
-        gap: 8px;
-    }
-
-    .resource-card {
-        padding: 9px 10px;
-    }
-
-    .resource-card strong {
-        font-size: 18px;
+    .resource-card strong,
+    .status-card strong,
+    .reward-card strong {
+        font-size: 14px;
     }
 
     .main-layout {
-        grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
-        gap: 10px;
-    }
-
-    .wheel-panel,
-    .side-panel {
-        padding: 10px;
-    }
-
-    .wheel-hud {
-        margin-bottom: 8px;
-        gap: 10px;
-    }
-
-    .wheel-hud h2 {
-        font-size: 20px;
-    }
-
-    .rule-chip {
-        padding: 6px 10px;
-        font-size: 11px;
+        grid-template-columns: minmax(0, 1.05fr) minmax(220px, 0.95fr);
     }
 
     .wheel-stage {
-        min-height: 320px;
+        min-height: 300px;
+    }
+
+    .wheel-bottom {
+        gap: 6px;
     }
 
     .star-ring-shell {
@@ -721,42 +775,6 @@ button:disabled {
 
     .star-ring-shell::after {
         inset: 18px;
-    }
-
-    .star-slot {
-        width: 44px;
-        height: 44px;
-        margin-left: -22px;
-        margin-top: -22px;
-    }
-
-    .star-slot::after {
-        font-size: 13px;
-    }
-
-    .element-ball {
-        width: 58px;
-        height: 58px;
-        margin-left: -29px;
-        margin-top: -29px;
-    }
-
-    .center-sigil {
-        width: 68px;
-        height: 68px;
-        font-size: 20px;
-    }
-
-    .outer-pointer {
-        top: 8px;
-        width: 40px;
-        height: 54px;
-    }
-
-    .inner-pointer {
-        top: 12px;
-        width: 30px;
-        height: 42px;
     }
 
     .wheel-legend {
@@ -774,56 +792,42 @@ button:disabled {
         height: 20px;
     }
 
-    .side-head {
-        gap: 8px;
-    }
-
-    .side-head h3 {
-        font-size: 18px;
-    }
-
     .header-button-group {
         gap: 6px;
     }
 
-    .side-section {
-        padding: 9px;
-        border-radius: 16px;
+    .side-head {
+        align-items: stretch;
+        flex-direction: column;
     }
 
-    .status-grid,
-    .reward-grid {
-        gap: 6px;
+    .compact-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .status-card,
-    .reward-card,
-    .star-track-card {
-        padding: 8px 9px;
+    .compact-reward-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) and (orientation: landscape) {
+    :root {
+        --wheel-size: clamp(220px, 40vw, 300px);
     }
 
-    .status-card strong,
-    .reward-card strong {
-        font-size: 15px;
-        min-height: 0;
+    .topbar h1 {
+        font-size: 20px;
     }
 
-    .reward-card p {
-        min-height: 0;
+    .wheel-stage {
+        min-height: 270px;
+    }
+
+    .rule-chip,
+    .skip-toggle,
+    .hint-line,
+    .reward-card p,
+    .legend-item {
         font-size: 11px;
-        margin-bottom: 8px;
-    }
-
-    .primary-btn,
-    .accent-btn,
-    .accent-alt-btn,
-    .secondary-btn,
-    .ghost-btn {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-
-    .track-node {
-        height: 10px;
     }
 }

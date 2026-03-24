@@ -1,18 +1,18 @@
 const ELEMENTS = [
-    { key: "qaq", name: "qaq", suit: "qaq", className: "gold", short: "qaq" },
-    { key: "\u4e09", name: "\u4e09", suit: "\u4e09", className: "wood", short: "\u4e09" },
-    { key: "\u6021", name: "\u6021", suit: "\u6021", className: "water", short: "\u6021" },
-    { key: "\u65b9", name: "\u65b9", suit: "\u65b9", className: "fire", short: "\u65b9" },
-    { key: "\u83f2", name: "\u83f2", suit: "\u83f2", className: "earth", short: "\u83f2" }
+    { key: "qaq", name: "qaq", suit: "qaq", className: "gold" },
+    { key: "三", name: "三", suit: "三", className: "wood" },
+    { key: "怡", name: "怡", suit: "怡", className: "water" },
+    { key: "方", name: "方", suit: "方", className: "fire" },
+    { key: "菲", name: "菲", suit: "菲", className: "earth" }
 ];
 
 const STAR_SLOTS = [1, 1, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1];
 const ELEMENT_ASSETS = [
-    { number: 1, image: "cimg/qaq.png" },
-    { number: 2, image: "cimg/\u4e09.png" },
-    { number: 3, image: "cimg/\u6021.png" },
-    { number: 4, image: "cimg/\u65b9.png" },
-    { number: 5, image: "cimg/\u83f2.png" }
+    { image: "cimg/qaq.png" },
+    { image: "cimg/\u4e09.png" },
+    { image: "cimg/\u6021.png" },
+    { image: "cimg/\u65b9.png" },
+    { image: "cimg/\u83f2.png" }
 ];
 const PROTECT_COSTS = { 1: 6, 2: 17, 3: 51, 4: 153, 5: 440, 6: 827 };
 const MAX_STARS = 7;
@@ -25,12 +25,17 @@ const state = {
     badges: 0,
     inventory: [],
     logs: [],
+    roundNumber: 0,
     roundActive: false,
+    roundLocked: false,
     currentElement: null,
+    currentElementIndex: -1,
     currentStars: 0,
     currentPrize: null,
+    pendingTokenReward: 0,
     protectFailCount: 0,
     spinning: false,
+    skipAnimation: false,
     selectedElementIndex: 0,
     selectedStarIndex: 0,
     starRotation: 0,
@@ -44,7 +49,7 @@ window.addEventListener("DOMContentLoaded", () => {
     buildWheel();
     bindEvents();
     updateAll();
-    addLog("系统已就绪。点击“抽奖 (6)”开始新的一轮。");
+    addLog("系统已就绪，点击“抽奖 (6)”开始新的一轮。");
 });
 
 function bindUi() {
@@ -57,7 +62,7 @@ function bindUi() {
     ui.elementValue = document.getElementById("elementValue");
     ui.starValue = document.getElementById("starValue");
     ui.protectCountValue = document.getElementById("protectCountValue");
-    ui.roundStateValue = document.getElementById("roundStateValue");
+    ui.roundNumberValue = document.getElementById("roundNumberValue");
     ui.costHint = document.getElementById("costHint");
     ui.tokenRewardValue = document.getElementById("tokenRewardValue");
     ui.tokenRewardText = document.getElementById("tokenRewardText");
@@ -75,6 +80,7 @@ function bindUi() {
     ui.openArchiveButton = document.getElementById("openArchiveButton");
     ui.totalSpendButton = document.getElementById("totalSpendButton");
     ui.resetButton = document.getElementById("resetButton");
+    ui.skipAnimationToggle = document.getElementById("skipAnimationToggle");
 }
 
 function buildWheel() {
@@ -123,6 +129,11 @@ function bindEvents() {
     ui.claimPrizeButton.addEventListener("click", claimPrize);
     ui.openArchiveButton.addEventListener("click", openArchivePage);
     ui.resetButton.addEventListener("click", resetAllData);
+    if (ui.skipAnimationToggle) {
+        ui.skipAnimationToggle.addEventListener("change", () => {
+            state.skipAnimation = ui.skipAnimationToggle.checked;
+        });
+    }
 }
 
 function recharge() {
@@ -147,7 +158,7 @@ async function startDraw() {
         return;
     }
     if (state.roundActive) {
-        window.alert("当前轮次还有奖励未处理，请先领取令牌或奖励。");
+        window.alert("当前轮次尚未结算，请先领取奖励。");
         return;
     }
     if (state.balance < 6) {
@@ -157,17 +168,21 @@ async function startDraw() {
 
     state.balance -= 6;
     state.totalSpend += 6;
+    state.roundNumber += 1;
+    state.roundActive = true;
+    state.roundLocked = false;
+    state.pendingTokenReward = 0;
     state.protectFailCount = 0;
 
     const elementIndex = randomIndex(ELEMENTS.length);
     const starIndex = randomIndex(STAR_SLOTS.length);
     const stars = STAR_SLOTS[starIndex];
 
-    addLog("开始抽奖，消耗 6 余额。");
+    addLog("第 " + state.roundNumber + " 轮开始，消耗 6 余额。");
     await spinWheel(elementIndex, starIndex);
 
-    state.roundActive = true;
     state.currentElement = ELEMENTS[elementIndex];
+    state.currentElementIndex = elementIndex;
     state.currentStars = stars;
     state.currentPrize = generatePrize(state.currentElement, state.currentStars);
     state.selectedElementIndex = elementIndex;
@@ -185,8 +200,12 @@ async function normalAppend() {
         window.alert("请先开始一轮抽奖。");
         return;
     }
+    if (state.roundLocked) {
+        window.alert("本轮已结束，请先领取奖励后再开始下一轮。");
+        return;
+    }
     if (state.currentStars >= MAX_STARS) {
-        window.alert("已达到 7 星上限，请直接领奖。");
+        window.alert("已达到 7 星上限，请直接领取奖励。");
         return;
     }
 
@@ -198,9 +217,13 @@ async function normalAppend() {
     addLog("普通追加开始。");
     await spinWheel(elementIndex, starIndex);
 
+    state.selectedElementIndex = elementIndex;
+    state.selectedStarIndex = starIndex;
+
     if (rolledElement.key === state.currentElement.key) {
         state.currentStars = Math.min(MAX_STARS, state.currentStars + rolledStars);
         state.currentPrize = generatePrize(state.currentElement, state.currentStars);
+        state.pendingTokenReward = 0;
         state.protectFailCount = 0;
         addLog("普通追加成功，命中 " + rolledElement.name + "，星级 +" + rolledStars + "，当前 " + state.currentStars + " 星。");
     } else {
@@ -209,8 +232,6 @@ async function normalAppend() {
         resolveNormalFailure();
     }
 
-    state.selectedElementIndex = elementIndex;
-    state.selectedStarIndex = starIndex;
     updateAll();
 }
 
@@ -222,8 +243,12 @@ async function protectedAppend() {
         window.alert("请先开始一轮抽奖。");
         return;
     }
+    if (state.roundLocked) {
+        window.alert("本轮已结束，请先领取奖励后再开始下一轮。");
+        return;
+    }
     if (state.currentStars >= MAX_STARS) {
-        window.alert("已达到 7 星上限，请直接领奖。");
+        window.alert("已达到 7 星上限，请直接领取奖励。");
         return;
     }
 
@@ -239,10 +264,11 @@ async function protectedAppend() {
 
     state.balance -= cost;
     state.totalSpend += cost;
+
     const forcedSuccess = state.protectFailCount >= 2;
     const starIndex = randomIndex(STAR_SLOTS.length);
     const elementIndex = forcedSuccess
-        ? ELEMENTS.findIndex((item) => item.key === state.currentElement.key)
+        ? (state.currentElementIndex >= 0 ? state.currentElementIndex : state.selectedElementIndex)
         : randomIndex(ELEMENTS.length);
     const rolledElement = ELEMENTS[elementIndex];
     const rolledStars = STAR_SLOTS[starIndex];
@@ -250,21 +276,23 @@ async function protectedAppend() {
     addLog("保护追加开始，消耗 " + cost + " 余额。");
     await spinWheel(elementIndex, starIndex);
 
+    state.selectedElementIndex = elementIndex;
+    state.selectedStarIndex = starIndex;
+
     if (rolledElement.key === state.currentElement.key) {
         state.currentStars = Math.min(MAX_STARS, state.currentStars + rolledStars);
         state.currentPrize = generatePrize(state.currentElement, state.currentStars);
-        addLog("保护追加成功，星级 +" + rolledStars + "，当前 " + state.currentStars + " 星。");
+        state.pendingTokenReward = 0;
         if (forcedSuccess) {
             addLog("本次触发保护保底，第 3 次保护追加必定成功。");
         }
         state.protectFailCount = 0;
+        addLog("保护追加成功，星级 +" + rolledStars + "，当前 " + state.currentStars + " 星。");
     } else {
         state.protectFailCount += 1;
-        addLog("保护追加未命中当前主属性，不降级。当前保护失败计数：" + state.protectFailCount + "。");
+        addLog("保护追加未命中当前主属性，不降星。当前保护失败计数：" + state.protectFailCount + "。");
     }
 
-    state.selectedElementIndex = elementIndex;
-    state.selectedStarIndex = starIndex;
     updateAll();
 }
 
@@ -272,9 +300,10 @@ function resolveNormalFailure() {
     const current = state.currentStars;
 
     if (current <= 1) {
-        state.tokens += 2;
-        addLog("1 星普通追加失败，直接结算五曜令牌 ×2。");
-        resetRound("本轮已结束。");
+        state.pendingTokenReward = 2;
+        state.currentPrize = null;
+        state.roundLocked = true;
+        addLog("1 星普通追加失败，本轮结束，请领取令牌奖励后开启下一轮。");
         return;
     }
 
@@ -282,16 +311,19 @@ function resolveNormalFailure() {
     addLog("失败判定：降 " + drop + " 星。");
 
     const settlement = getFailureSettlement(current, drop);
+    state.roundLocked = true;
+
     if (settlement.mode === "settle") {
-        state.tokens += settlement.tokens;
-        addLog("本次失败直接结算五曜令牌 ×" + settlement.tokens + "。");
-        resetRound("本轮已结束。");
+        state.pendingTokenReward = settlement.tokens;
+        state.currentPrize = null;
+        addLog("本轮结束，请领取令牌奖励 x" + settlement.tokens + " 后开启下一轮。");
         return;
     }
 
     state.currentStars = settlement.nextStars;
     state.currentPrize = generatePrize(state.currentElement, state.currentStars);
-    addLog("星级回退至 " + state.currentStars + " 星，请选择领取令牌或奖励。");
+    state.pendingTokenReward = getTokenReward(state.currentStars);
+    addLog("星级回退至 " + state.currentStars + " 星，本轮自动结束，请先领取奖励。");
 }
 
 function getFailureSettlement(currentStars, drop) {
@@ -322,15 +354,15 @@ function claimTokens() {
         return;
     }
 
-    const tokenReward = getTokenReward(state.currentStars);
+    const tokenReward = getCurrentTokenReward();
     if (!tokenReward) {
         window.alert("当前轮次没有令牌奖励。");
         return;
     }
 
     state.tokens += tokenReward;
-    addLog("领取令牌成功，获得五曜令牌 ×" + tokenReward + "。");
-    resetRound("已领取令牌。");
+    addLog("领取令牌成功，获得令牌 x" + tokenReward + "。");
+    resetRound("本轮已完成。");
     updateAll();
 }
 
@@ -340,28 +372,23 @@ function claimPrize() {
         return;
     }
     if (!state.currentPrize) {
-        window.alert("当前星级还没有物品奖励，请领取令牌。");
+        window.alert("当前没有可领取的物品奖励，请领取令牌。");
         return;
     }
 
     if (state.currentStars === 6) {
         state.badges += 1;
-        addLog("领取奖励成功，获得玛莎拉蒂兑换徽章 ×1。");
+        addLog("领取奖励成功，获得玛莎拉蒂兑换徽章 x1。");
     } else if (state.currentStars >= 7) {
         state.badges += 3;
-        addLog("领取奖励成功，获得玛莎拉蒂兑换徽章 ×3。");
+        addLog("领取奖励成功，获得玛莎拉蒂兑换徽章 x3。");
     } else {
         state.inventory.unshift(state.currentPrize);
         addLog("领取奖励成功，获得：" + state.currentPrize + "。");
     }
 
-    resetRound("已领取奖励。");
+    resetRound("本轮已完成。");
     updateAll();
-}
-
-function clearLogs() {
-    state.logs = [];
-    addLog("日志已清空。");
 }
 
 function openArchivePage() {
@@ -381,10 +408,14 @@ function resetAllData() {
     state.badges = 0;
     state.inventory = [];
     state.logs = [];
+    state.roundNumber = 0;
     state.roundActive = false;
+    state.roundLocked = false;
     state.currentElement = null;
+    state.currentElementIndex = -1;
     state.currentStars = 0;
     state.currentPrize = null;
+    state.pendingTokenReward = 0;
     state.protectFailCount = 0;
     state.spinning = false;
     state.selectedElementIndex = 0;
@@ -392,8 +423,7 @@ function resetAllData() {
     state.starRotation = 0;
     state.elementRotation = 0;
 
-    ui.starRing.style.transform = "rotate(0deg)";
-    ui.elementOrbit.style.transform = "rotate(0deg)";
+    setWheelRotation(0, 0, false);
     clearHighlights();
 
     addLog("已执行重抽，全部数据已清空。");
@@ -402,9 +432,12 @@ function resetAllData() {
 
 function resetRound(roundMessage) {
     state.roundActive = false;
+    state.roundLocked = false;
     state.currentElement = null;
+    state.currentElementIndex = -1;
     state.currentStars = 0;
     state.currentPrize = null;
+    state.pendingTokenReward = 0;
     state.protectFailCount = 0;
     if (roundMessage) {
         addLog(roundMessage);
@@ -420,6 +453,16 @@ function getTokenReward(stars) {
     if (stars === 6) return 1440;
     if (stars >= 7) return 4320;
     return 0;
+}
+
+function getCurrentTokenReward() {
+    if (state.pendingTokenReward > 0) {
+        return state.pendingTokenReward;
+    }
+    if (!state.roundActive) {
+        return 0;
+    }
+    return getTokenReward(state.currentStars);
 }
 
 function generatePrize(element, stars) {
@@ -441,15 +484,15 @@ function generatePrize(element, stars) {
     if (stars === 5) {
         const roll = Math.random() * 10;
         if (roll > 6.6) return "M416-五爪金龙";
-        if (roll > 3.3) return "至尊龙雀飞行服";
+        if (roll > 3.3) return "至尊龙雀飞行器";
         return "套装-" + element.suit;
     }
 
     if (stars === 6) {
-        return "玛莎拉蒂兑换徽章 ×1";
+        return "玛莎拉蒂兑换徽章 x1";
     }
 
-    return "玛莎拉蒂兑换徽章 ×3";
+    return "玛莎拉蒂兑换徽章 x3";
 }
 
 function addLog(message) {
@@ -475,23 +518,90 @@ function persistArchiveState() {
 async function spinWheel(elementIndex, starIndex) {
     state.spinning = true;
     setButtonsDisabled(true);
+    clearHighlights();
 
     const starStep = 360 / STAR_SLOTS.length;
     const elementStep = 360 / ELEMENTS.length;
-    state.starRotation += 1800 - starIndex * starStep;
-    state.elementRotation += 2160 - elementIndex * elementStep;
+    const targetStarRotation = normalizeTargetRotation(state.starRotation, -starIndex * starStep);
+    const targetElementRotation = normalizeTargetRotation(state.elementRotation, -elementIndex * elementStep);
 
-    ui.starRing.style.transform = "rotate(" + state.starRotation + "deg)";
-    ui.elementOrbit.style.transform = "rotate(" + state.elementRotation + "deg)";
-    clearHighlights();
+    state.selectedElementIndex = elementIndex;
+    state.selectedStarIndex = starIndex;
 
-    await wait(2250);
+    if (state.skipAnimation) {
+        state.starRotation = targetStarRotation;
+        state.elementRotation = targetElementRotation;
+        setWheelRotation(targetStarRotation, targetElementRotation, false);
+        highlightStar(starIndex);
+        highlightElement(elementIndex);
+        state.spinning = false;
+        updateAll();
+        return;
+    }
+
+    const starSpins = 4 + randomIndex(2);
+    const elementSpins = 6 + randomIndex(3);
+    const animatedStarRotation = targetStarRotation + starSpins * 360;
+    const animatedElementRotation = targetElementRotation + elementSpins * 360;
+
+    setWheelTransition(2.8, 4.2);
+    setWheelRotation(animatedStarRotation, animatedElementRotation, true);
+
+    await wait(3000);
     highlightStar(starIndex);
-    await wait(1400);
+    await wait(1200);
     highlightElement(elementIndex);
+
+    state.starRotation = targetStarRotation;
+    state.elementRotation = targetElementRotation;
+    setWheelTransition(0, 0);
+    setWheelRotation(targetStarRotation, targetElementRotation, false);
+    setWheelTransition(2.2, 3.6);
 
     state.spinning = false;
     updateAll();
+}
+
+function setWheelTransition(starSeconds, elementSeconds) {
+    ui.starRing.style.transitionDuration = starSeconds + "s";
+    ui.elementOrbit.style.transitionDuration = elementSeconds + "s";
+}
+
+function setWheelRotation(starRotation, elementRotation, keepTransition) {
+    if (!keepTransition) {
+        ui.starRing.style.transitionDuration = "0s";
+        ui.elementOrbit.style.transitionDuration = "0s";
+    }
+
+    ui.starRing.style.transform = "rotate(" + starRotation + "deg)";
+    ui.elementOrbit.style.transform = "rotate(" + elementRotation + "deg)";
+
+    if (!keepTransition) {
+        ui.starRing.offsetHeight;
+        ui.elementOrbit.offsetHeight;
+        ui.starRing.style.transitionDuration = "2.2s";
+        ui.elementOrbit.style.transitionDuration = "3.6s";
+    }
+}
+
+function normalizeTargetRotation(currentRotation, targetNormalized) {
+    const currentNormalized = normalizeAngle(currentRotation);
+    let delta = targetNormalized - currentNormalized;
+    while (delta < 0) {
+        delta += 360;
+    }
+    while (delta >= 360) {
+        delta -= 360;
+    }
+    return currentRotation + delta;
+}
+
+function normalizeAngle(angle) {
+    let normalized = angle % 360;
+    if (normalized < 0) {
+        normalized += 360;
+    }
+    return normalized;
 }
 
 function clearHighlights() {
@@ -516,10 +626,15 @@ function highlightElement(elementIndex) {
 }
 
 function updateAll() {
+    const tokenReward = getCurrentTokenReward();
+    const waitingForClaim = state.roundActive && state.roundLocked;
+    const canClaimPrize = state.roundActive && !!state.currentPrize;
+
     ui.balanceValue.textContent = String(state.balance);
     ui.tokenValue.textContent = String(state.tokens);
     ui.badgeValue.textContent = String(state.badges);
     ui.totalSpendButton.textContent = "总消费 " + state.totalSpend;
+    ui.roundNumberValue.textContent = state.roundNumber ? "第 " + state.roundNumber + " 轮" : "未开始";
 
     ui.rechargeButton.disabled = state.spinning;
     ui.openArchiveButton.disabled = state.spinning;
@@ -529,33 +644,37 @@ function updateAll() {
         ? state.currentElement.name + " · " + state.currentStars + " 星"
         : "等待开始";
     ui.elementValue.textContent = state.currentElement ? state.currentElement.name : "-";
-    ui.starValue.textContent = state.currentStars + " 星";
+    ui.starValue.textContent = state.currentStars ? state.currentStars + " 星" : "0 星";
     ui.protectCountValue.textContent = state.protectFailCount + " / 2";
-    ui.roundStateValue.textContent = String(state.roundActive ? getTokenReward(state.currentStars) : 0);
-
-    const tokenReward = state.roundActive ? getTokenReward(state.currentStars) : 0;
-    ui.tokenRewardValue.textContent = tokenReward ? "×" + tokenReward : "0";
-    ui.tokenRewardText.textContent = state.roundActive ? "当前星级可领取五曜令牌。" : "达到星级后可领取五曜令牌。";
+    ui.tokenRewardValue.textContent = tokenReward ? "x" + tokenReward : "0";
+    ui.tokenRewardText.textContent = waitingForClaim
+        ? "本轮已结束，请先领取令牌或奖励。"
+        : (state.roundActive ? "当前星级可领取对应令牌。" : "达到星级后可领取令牌。");
 
     ui.prizeRewardValue.textContent = state.currentPrize || "NULL";
-    ui.prizeRewardText.textContent = state.currentPrize ? "右侧奖励会随当前星级重新生成。" : "3 星后开始出现物品奖励，6 星及以上可领取徽章。";
+    ui.prizeRewardText.textContent = state.currentPrize
+        ? "当前轮次已生成可领取的物品奖励。"
+        : "3 星开始出现物品奖励，6 星及以上可领取徽章。";
 
     ui.starTrackText.textContent = state.currentStars + " / " + MAX_STARS + " 星";
     ui.starTrack.querySelectorAll(".track-node").forEach((node, index) => {
         node.classList.toggle("is-filled", index < state.currentStars);
     });
 
-    ui.claimTokenButton.disabled = !state.roundActive;
-    ui.claimPrizeButton.disabled = !state.roundActive || !state.currentPrize;
+    ui.claimTokenButton.disabled = !state.roundActive || !tokenReward;
+    ui.claimPrizeButton.disabled = !canClaimPrize;
     ui.drawButton.disabled = state.spinning || state.roundActive;
-    ui.normalAppendButton.disabled = state.spinning || !state.roundActive || state.currentStars >= MAX_STARS;
+    ui.normalAppendButton.disabled = state.spinning || !state.roundActive || state.roundLocked || state.currentStars >= MAX_STARS;
 
     const protectCost = PROTECT_COSTS[state.currentStars] || 0;
-    ui.protectedAppendButton.disabled = state.spinning || !state.roundActive || state.currentStars >= MAX_STARS || !protectCost;
+    ui.protectedAppendButton.disabled = state.spinning || !state.roundActive || state.roundLocked || state.currentStars >= MAX_STARS || !protectCost;
     ui.protectedAppendButton.textContent = protectCost ? "保护追加 (" + protectCost + ")" : "保护追加";
-    ui.costHint.textContent = state.roundActive && protectCost
-        ? "当前 " + state.currentStars + " 星，保护追加将消耗 " + protectCost + " 余额。连续失败两次后第 3 次必成。"
-        : "保护追加费用会随当前星级变化。";
+    ui.costHint.textContent = waitingForClaim
+        ? "本轮已锁定，请先领取奖励后再开始下一轮。"
+        : (state.roundActive && protectCost
+            ? "当前 " + state.currentStars + " 星，保护追加将消耗 " + protectCost + " 余额。连续失败 2 次后第 3 次必成。"
+            : "保护追加费用会随当前星级变化。");
+
     persistArchiveState();
 }
 
@@ -571,7 +690,9 @@ function setButtonsDisabled(disabled) {
         ui.claimPrizeButton,
         ui.openArchiveButton
     ].forEach((button) => {
-        button.disabled = disabled;
+        if (button) {
+            button.disabled = disabled;
+        }
     });
 }
 

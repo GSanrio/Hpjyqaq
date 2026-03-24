@@ -11,7 +11,7 @@
         <div class="rotate-lock-card">
             <p class="rotate-lock-label">Mobile View</p>
             <h2>请横屏查看</h2>
-            <p>为了保证转盘和操作区完整显示，手机端仅支持横屏模式。</p>
+            <p>为了保证转盘和操作区完整显示，手机端竖屏会显示横屏提示，横屏后自动恢复完整界面。</p>
         </div>
     </div>
 
@@ -59,10 +59,16 @@
                     </div>
                 </div>
 
-                <div class="wheel-legend" id="wheelLegend"></div>
+                <div class="wheel-bottom">
+                    <label class="skip-toggle wheel-skip-toggle">
+                        <input id="skipAnimationToggle" type="checkbox">
+                        <span>跳过动画，直接显示结果</span>
+                    </label>
+                    <div class="wheel-legend" id="wheelLegend"></div>
+                </div>
             </section>
 
-            <section class="panel side-panel compact-side-panel">
+            <section class="panel side-panel merged-side-panel">
                 <div class="side-head">
                     <div>
                         <p class="tiny-label">操作与结算</p>
@@ -75,7 +81,7 @@
                     </div>
                 </div>
 
-                <div class="side-section">
+                <div class="side-block progress-block">
                     <div class="star-track-card compact-track-card">
                         <div class="star-track-head">
                             <span class="tiny-label">星轨进度</span>
@@ -84,45 +90,53 @@
                         <div class="star-track" id="starTrack"></div>
                     </div>
 
-                    <div class="status-grid">
+                    <div class="status-grid compact-status-grid">
+                        <div class="status-card"><span>当前轮次</span><strong id="roundNumberValue">未开始</strong></div>
                         <div class="status-card"><span>当前属性</span><strong id="elementValue">-</strong></div>
                         <div class="status-card"><span>当前星级</span><strong id="starValue">0 星</strong></div>
                         <div class="status-card"><span>保护失败计数</span><strong id="protectCountValue">0 / 2</strong></div>
-                        <div class="status-card"><span>本轮令牌</span><strong id="roundStateValue">0</strong></div>
                     </div>
-
-                    <div class="action-stack">
-                        <button id="drawButton" class="primary-btn">抽奖 (6)</button>
-                        <button id="normalAppendButton" class="accent-btn" disabled>普通追加</button>
-                        <button id="protectedAppendButton" class="accent-alt-btn" disabled>保护追加</button>
-                    </div>
-
-                    <p class="hint-line" id="costHint">保护追加费用会随当前星级变化。</p>
                 </div>
 
-                <div class="side-section reward-section">
-                    <div class="section-title">
-                        <p class="tiny-label">待领取奖励</p>
+                <div class="side-block action-reward-block">
+                    <div class="action-column">
+                        <div class="section-title">
+                            <p class="tiny-label">抽奖操作</p>
+                        </div>
+
+                        <div class="action-stack compact-action-stack">
+                            <button id="drawButton" class="primary-btn">抽奖 (6)</button>
+                            <button id="normalAppendButton" class="accent-btn" disabled>普通追加</button>
+                            <button id="protectedAppendButton" class="accent-alt-btn" disabled>保护追加</button>
+                        </div>
+
+                        <p class="hint-line" id="costHint">保护追加费用会随当前星级变化。</p>
                     </div>
 
-                    <div class="reward-grid">
-                        <article class="reward-card token-card">
-                            <span class="reward-kicker">令牌奖励</span>
-                            <strong id="tokenRewardValue">0</strong>
-                            <p id="tokenRewardText">达到星级后可领取令牌。</p>
-                            <button id="claimTokenButton" class="secondary-btn" disabled>领取令牌</button>
-                        </article>
+                    <div class="reward-column">
+                        <div class="section-title">
+                            <p class="tiny-label">待领取奖励</p>
+                        </div>
 
-                        <article class="reward-card prize-card">
-                            <span class="reward-kicker">物品奖励</span>
-                            <strong id="prizeRewardValue">NULL</strong>
-                            <p id="prizeRewardText">3 星开始出现物品奖励，6 星及以上可领取徽章。</p>
-                            <button id="claimPrizeButton" class="secondary-btn" disabled>领取奖励</button>
-                        </article>
-                    </div>
+                        <div class="reward-grid compact-reward-grid">
+                            <article class="reward-card token-card">
+                                <span class="reward-kicker">令牌奖励</span>
+                                <strong id="tokenRewardValue">0</strong>
+                                <p id="tokenRewardText">达到星级后可领取令牌。</p>
+                                <button id="claimTokenButton" class="secondary-btn" disabled>领取令牌</button>
+                            </article>
 
-                    <div class="subpage-entry">
-                        <button id="openArchiveButton" class="ghost-btn archive-btn">打开记录与背包</button>
+                            <article class="reward-card prize-card">
+                                <span class="reward-kicker">物品奖励</span>
+                                <strong id="prizeRewardValue">NULL</strong>
+                                <p id="prizeRewardText">3 星开始出现物品奖励，6 星及以上可领取徽章。</p>
+                                <button id="claimPrizeButton" class="secondary-btn" disabled>领取奖励</button>
+                            </article>
+                        </div>
+
+                        <div class="subpage-entry">
+                            <button id="openArchiveButton" class="ghost-btn archive-btn">打开记录与背包</button>
+                        </div>
                     </div>
                 </div>
             </section>
