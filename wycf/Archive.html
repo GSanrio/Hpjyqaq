@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记录与背包</title>
+    <link rel="stylesheet" href="Archive.css">
+</head>
+<body>
+    <div class="archive-shell">
+        <header class="archive-header">
+            <div>
+                <p class="eyebrow">Archive</p>
+                <h1>记录与背包</h1>
+                <p class="subcopy">这里展示主页累计的日志、已获得物品、令牌和徽章数量。</p>
+            </div>
+            <div class="header-actions">
+                <button id="refreshButton" class="ghost-btn">刷新</button>
+                <button id="clearButton" class="ghost-btn danger-btn">清空记录</button>
+            </div>
+        </header>
+
+        <section class="summary-grid">
+            <div class="summary-card">
+                <span>令牌总数</span>
+                <strong id="tokenValue">0</strong>
+            </div>
+            <div class="summary-card">
+                <span>徽章总数</span>
+                <strong id="badgeValue">0</strong>
+            </div>
+            <div class="summary-card">
+                <span>物品总数</span>
+                <strong id="itemCountValue">0</strong>
+            </div>
+        </section>
+
+        <main class="archive-grid">
+            <section class="panel">
+                <div class="panel-head">
+                    <p class="eyebrow">Inventory</p>
+                    <h2>已获得物品</h2>
+                </div>
+                <ul id="inventoryList" class="inventory-list"></ul>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <p class="eyebrow">Logs</p>
+                    <h2>过程日志</h2>
+                </div>
+                <div id="logList" class="log-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="Archive.js"></script>
+</body>
+</html>
