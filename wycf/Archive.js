@@ -1,4 +1,4 @@
-const STORAGE_KEY = "chouche-wheel-state";
+﻿const STORAGE_KEY = "chouche-wheel-state";
 
 const ui = {
     tokenValue: document.getElementById("tokenValue"),
